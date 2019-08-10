@@ -1,26 +1,30 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import {createStore, compose, applyMiddleware} from "redux";
+import {Provider} from 'react-redux';
+import promiseMiddleware from 'redux-promise';
+import {persistStore} from "redux-persist";
+import {PersistGate} from 'redux-persist/integration/react';
+import persistedReducer from './reducers';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import './App.scss';
+
+import ConnectedApp from './ConnectedApp';
+
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+
+export const store = createStore(persistedReducer, {}, composeEnhancers(
+    applyMiddleware(promiseMiddleware)
+));
+const persistor = persistStore(store);
+
+export default class AppRenderer extends React.Component {
+  render() {
+    return (
+        <Provider store={store}>
+          <PersistGate persistor={persistor} loading={null}>
+              <ConnectedApp/>
+          </PersistGate>
+        </Provider>
+    )
+  }
 }
-
-export default App;
